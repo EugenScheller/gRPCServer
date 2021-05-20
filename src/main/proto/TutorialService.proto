@@ -3,16 +3,39 @@ option java_multiple_files = true;
 package com.eugen.sandbox.grpc;
 
 
-message CreateTutorialRequest {
+message Input {
+  string searchString = 1;
+}
+
+message Tutorial {
   string title = 1;
   string description = 2;
   bool published = 3;
+  int32 id =4;
 }
 
-message CreateTutorialResponse {
-  bool response = 1;
+enum ResponseType {
+  OK = 0;
+  SERVER_ERROR = 1;
+  USER_ERROR = 2;
 }
 
+message Response {
+  string response = 1;
+  uint32 createdTutorials = 2;
+  uint32 notCreatedTutorials = 3;
+  uint32 elapsedTime = 4;
+}
+
+//https://grpc.io/docs/languages/java/basics/
 service CreateTutorialService {
-  rpc create(CreateTutorialRequest) returns (CreateTutorialResponse);
+  // Einfacher Request zum erstellen eines neuen Tutorials
+  rpc create(Tutorial) returns (Response);
+  // Serverseitiges Streamen zum Abfragen aller Tutorials
+  rpc ListAllTutorials(Input) returns (stream Tutorial);
+  // Clientseitiges Streamen zum Erstellen vieler Tutorials
+  rpc createTutorials(stream Tutorial) returns (Response);
+  // Bidirektionales Streamen zum validieren der Tutorials
+  rpc validateTutorials(stream Tutorial) returns (stream Tutorial) {}
 }
+
